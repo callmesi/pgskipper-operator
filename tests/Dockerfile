@@ -1,5 +1,6 @@
 FROM ghcr.io/callmesi/qubership-docker-integration-tests:main
 
+
 ENV LC_ALL=en_US.UTF-8 \
     LANG=en_US.UTF-8
 
