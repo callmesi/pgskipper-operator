@@ -5,17 +5,26 @@ permissions:
   contents: read
 
 on:
-  schedule:
-    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      service_branch:
+        description: 'Branch to run tests against'
+        required: false
+        default: 'main'
+      skip_wait:
+        description: 'Skip waiting for dev_build.yml to complete (use when images are already built)'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   Nightly-Pgskipper-Pipeline:
-    uses: Netcracker/qubership-test-pipelines/.github/workflows/pgskipper.yaml@3e4193378da5730d7b96d3a625d22a158d5e8372 #v1.12.0
+    uses: callmesi/qubership-test-pipelines/.github/workflows/pgskipper.yaml@c85e831b405da8dabd654940a90a483c87de4172 #v1.12.0
 
     with:
       repository_name: ${{ github.repository }}
       service_branch: '${{ github.head_ref || github.ref_name }}'
-      pipeline_branch: '3e4193378da5730d7b96d3a625d22a158d5e8372' #this value must match the value after '@' in 'uses'
+      pipeline_branch: 'c85e831b405da8dabd654940a90a483c87de4172' #this value must match the value after '@' in 'uses'
       runner_type: 'ubuntu-latest'
       scope: 'nightly'
     secrets:
