@@ -41,6 +41,7 @@ jobs:
             --set operator.image=ghcr.io/callmesi/pgskipper-operator:main \
             --set patroni.dockerImage=ghcr.io/callmesi/pgskipper-docker-patroni-${{ inputs.pg_version }}:main \
             --set tests.dockerImage=ghcr.io/callmesi/pgskipper-operator-tests:main \
+            --set patroni.storage.storageClass=standard \
             --set GLOBAL_SECURITY_CONTEXT=false \
             --namespace pgskipper \
             --timeout 10m
