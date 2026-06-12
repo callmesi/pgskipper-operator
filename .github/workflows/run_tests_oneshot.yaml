@@ -2,17 +2,10 @@ name: One-Shot Test Run (callmesi image)
 
 on:
   workflow_dispatch:
-    inputs:
-      pg_version:
-        description: 'PostgreSQL version to test against'
-        default: '16'
-        required: false
-        type: choice
-        options: ['16', '17', '18']
 
 jobs:
   run-tests:
-    name: pgskipper-docker-patroni-${{ inputs.pg_version }} | Test with callmesi image
+    name: Test with callmesi pgskipper-operator-tests image
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pgskipper-operator (this fork)
@@ -38,8 +31,6 @@ jobs:
         run: |
           helm install pgskipper ./operator/charts/patroni-core \
             -f ./operator/charts/patroni-core/patroni-core-quickstart-sample.yaml \
-            --set operator.image=ghcr.io/callmesi/pgskipper-operator:main \
-            --set patroni.dockerImage=ghcr.io/callmesi/pgskipper-docker-patroni-${{ inputs.pg_version }}:main \
             --set tests.dockerImage=ghcr.io/callmesi/pgskipper-operator-tests:main \
             --set patroni.storage.storageClass=standard \
             --set GLOBAL_SECURITY_CONTEXT=false \
