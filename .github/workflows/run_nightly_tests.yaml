@@ -16,15 +16,6 @@ on:
         required: false
         type: boolean
         default: false
-  push:
-    branches: [main]
-    paths-ignore:
-      - "docs/**"
-      - "CODE-OF-CONDUCT.md"
-      - "CONTRIBUTING.md"
-      - "LICENSE"
-      - "README.md"
-      - "SECURITY.md"
 
 jobs:
   Nightly-Pgskipper-Pipeline:

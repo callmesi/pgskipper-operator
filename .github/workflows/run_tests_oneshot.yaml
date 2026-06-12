@@ -1,0 +1,74 @@
+name: One-Shot Test Run (callmesi image)
+
+on:
+  workflow_dispatch:
+    inputs:
+      pg_version:
+        description: 'PostgreSQL version to test against'
+        default: '16'
+        required: false
+        type: choice
+        options: ['16', '17', '18']
+
+jobs:
+  run-tests:
+    name: pgskipper-docker-patroni-${{ inputs.pg_version }} | Test with callmesi image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pgskipper-operator (this fork)
+        uses: actions/checkout@v4
+
+      - name: Checkout qubership-test-pipelines (for cluster/verify scripts)
+        uses: actions/checkout@v4
+        with:
+          repository: Netcracker/qubership-test-pipelines
+          ref: 3e4193378da5730d7b96d3a625d22a158d5e8372
+          path: qubership-test-pipelines
+          persist-credentials: false
+
+      - name: Create kind cluster
+        uses: ./qubership-test-pipelines/actions/shared/create_cluster
+
+      - name: Install CRDs
+        run: |
+          kubectl create namespace pgskipper
+          kubectl create -f ./operator/charts/patroni-core/crds/netcracker.com_patronicores.yaml
+
+      - name: Install Patroni Core from fork charts
+        run: |
+          helm install pgskipper ./operator/charts/patroni-core \
+            -f ./operator/charts/patroni-core/patroni-core-quickstart-sample.yaml \
+            --set operator.image=ghcr.io/callmesi/pgskipper-operator:main \
+            --set patroni.dockerImage=ghcr.io/callmesi/pgskipper-docker-patroni-${{ inputs.pg_version }}:main \
+            --set tests.dockerImage=ghcr.io/callmesi/pgskipper-operator-tests:main \
+            --set GLOBAL_SECURITY_CONTEXT=false \
+            --namespace pgskipper \
+            --timeout 10m
+
+      - name: Verify installation and wait for tests
+        uses: ./qubership-test-pipelines/actions/shared/verify_installation
+        with:
+          check_tests: true
+          namespace: pgskipper
+          service_ready_max_retries: 120
+          service_ready_retry_interval: 10s
+          test_completion_max_retries: 120
+          test_completion_retry_interval: 10s
+          crd_list: patronicores.netcracker.com
+
+      - name: Show all pods
+        if: always()
+        run: kubectl get pods -n pgskipper -o wide
+
+      - name: Show test pod logs
+        if: always()
+        run: |
+          TEST_POD=$(kubectl get pods -n pgskipper --no-headers 2>/dev/null \
+            | grep -i test | awk '{print $1}' | head -1)
+          if [ -n "$TEST_POD" ]; then
+            echo "=== Logs from test pod: $TEST_POD ==="
+            kubectl logs "$TEST_POD" -n pgskipper --all-containers=true --prefix=true
+          else
+            echo "No test pod found. All pods:"
+            kubectl get pods -n pgskipper
+          fi
