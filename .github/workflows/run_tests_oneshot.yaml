@@ -28,10 +28,21 @@ jobs:
           kubectl create -f ./operator/charts/patroni-core/crds/netcracker.com_patronicores.yaml
 
       - name: Install Patroni Core from fork charts
+        env:
+          S3_USER: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
+          S3_PASS: ${{ secrets.AWS_S3_ACCESS_KEY_SECRET }}
         run: |
           helm install pgskipper ./operator/charts/patroni-core \
             -f ./operator/charts/patroni-core/patroni-core-quickstart-sample.yaml \
-            --set tests.dockerImage=ghcr.io/netcracker/pgskipper-operator-tests:main \
+            --set tests.dockerImage=ghcr.io/callmesi/pgskipper-operator-tests:main \
+            --set tests.runTestScenarios=full \
+            --set tests.atpReport.enabled=true \
+            --set tests.atpReport.atpStorage.provider=aws \
+            --set tests.atpReport.atpStorage.serverUrl=s3.amazonaws.com \
+            --set tests.atpReport.atpStorage.bucket=qstp-results \
+            --set tests.atpReport.atpStorage.region=us-east-1 \
+            --set-string tests.atpReport.atpStorage.username="${S3_USER}" \
+            --set-string tests.atpReport.atpStorage.password="${S3_PASS}" \
             --set patroni.storage.storageClass=standard \
             --set GLOBAL_SECURITY_CONTEXT=false \
             --namespace pgskipper \
