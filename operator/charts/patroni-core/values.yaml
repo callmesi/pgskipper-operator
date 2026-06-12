@@ -272,7 +272,7 @@ patroni:
 
 tests:
   install: true
-  dockerImage: ghcr.io/netcracker/pgskipper-operator-tests:main
+  dockerImage: ghcr.io/callmesi/pgskipper-operator-tests:main
   podLabels: {}
   # One of "full", "basic","custom" or one from testScenarios
   runTestScenarios: "basic"
