@@ -31,7 +31,7 @@ jobs:
         run: |
           helm install pgskipper ./operator/charts/patroni-core \
             -f ./operator/charts/patroni-core/patroni-core-quickstart-sample.yaml \
-            --set tests.dockerImage=ghcr.io/callmesi/pgskipper-operator-tests:main \
+            --set tests.dockerImage=ghcr.io/netcracker/pgskipper-operator-tests:main \
             --set patroni.storage.storageClass=standard \
             --set GLOBAL_SECURITY_CONTEXT=false \
             --namespace pgskipper \
